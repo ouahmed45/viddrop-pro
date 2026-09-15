@@ -144,34 +144,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = urlInput.value.trim();
     if (!url) return;
 
+    btnStartDownload.disabled = true;
+    btnStartDownload.innerText = "⏳ Préparation du fichier...";
     downloadMonitor.classList.remove("hidden");
-    monitorStatus.innerText = `⚡ Préparation du flux ${selectedFormat}...`;
-    progressBar.style.width = "0%";
-    monitorPercent.innerText = "0%";
+    monitorStatus.innerText = `⚡ Analyse et extraction du flux ${selectedFormat}...`;
+    progressBar.style.width = "15%";
+    monitorPercent.innerText = "15%";
 
-    // Simulation de la jauge réactive pendant le traitement
-    let p = 0;
+    let p = 15;
     const interval = setInterval(() => {
-      p += Math.floor(Math.random() * 15) + 5;
-      if (p >= 95) {
-        clearInterval(interval);
-        p = 95;
-        monitorStatus.innerText = "⚙ Normalisation Broadcast (CFR 48kHz)...";
+      if (p < 85) {
+        p += Math.floor(Math.random() * 8) + 4;
+        progressBar.style.width = `${p}%`;
+        monitorPercent.innerText = `${p}%`;
       }
-      progressBar.style.width = `${p}%`;
-      monitorPercent.innerText = `${p}%`;
-    }, 250);
+      if (p >= 50 && p < 80) {
+        monitorStatus.innerText = "⚙ Conversion et assemblage audio/vidéo...";
+      } else if (p >= 80) {
+        monitorStatus.innerText = "📥 Envoi vers Chrome... Le fichier arrive dans vos Téléchargements !";
+      }
+    }, 400);
 
-    // Déclenchement de l'URL de téléchargement direct
+    const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&format=${selectedFormat}`;
+
+    // Utilisation d'une iframe invisible pour déclencher le téléchargement sans quitter la page
+    let iframe = document.getElementById("hiddenDownloadFrame");
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = "hiddenDownloadFrame";
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+    }
+    iframe.src = downloadUrl;
+
     setTimeout(() => {
       clearInterval(interval);
       progressBar.style.width = "100%";
       monitorPercent.innerText = "100%";
-      monitorStatus.innerText = "✅ Téléchargement lancé !";
-
-      const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&format=${selectedFormat}`;
-      window.location.href = downloadUrl;
-    }, 2000);
+      monitorStatus.innerText = "✅ Téléchargement envoyé à votre navigateur Chrome !";
+      btnStartDownload.disabled = false;
+      btnStartDownload.innerText = "⚡ TÉLÉCHARGER MAINTENANT";
+    }, 3500);
   });
 
   // ── 7. Support Installation PWA sur Android ──
