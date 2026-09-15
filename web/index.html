@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViddRop — Téléchargeur Vidéo & Musique Gratuit (TikTok, YouTube, Insta, Facebook)</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/png" href="/static/logo.png">
+  <link rel="manifest" href="/android/manifest.json">
+  <meta name="theme-color" content="#FF2D55">
+</head>
+<body>
+  <!-- Ambiance Lumineuse d'Arrière-Plan (Glow Orbs) -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <!-- En-tête Flottant en Verre -->
+  <header class="glass-header">
+    <div class="nav-container">
+      <div class="brand">
+        <img src="/static/logo.png" alt="ViddRop Logo" class="brand-logo-img">
+        <div class="brand-text">
+          <h1>VIDD<span class="highlight">ROP</span> <span class="badge-web">EN LIGNE</span></h1>
+          <p class="tagline">✦ TÉLÉCHARGEUR VIDÉO & MUSIQUE FACILE</p>
+        </div>
+      </div>
+
+      <div class="nav-badges">
+        <span class="pill pill-ruby">⚡ Ultra Rapide</span>
+        <span class="pill pill-green">💎 Qualité HD & 4K</span>
+        <span class="pill pill-cyan">🚫 Sans Filigrane</span>
+      </div>
+
+      <div class="nav-actions">
+        <a href="#downloader" class="btn-glass-sm">🚀 Télécharger</a>
+        <a href="#apps" class="btn-glow-sm">📲 Installer l'App</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="main-content">
+    <section class="hero-section">
+      <div class="hero-logo-banner">
+        <img src="/static/logo.png" alt="ViddRop Icon" class="hero-brand-logo">
+      </div>
+      <div class="hero-badge">✨ 100% GRATUIT • SANS PUBLICITÉ • SANS INSCRIPTION</div>
+      <h2 class="hero-title">
+        Téléchargez Vos Vidéos & Musiques Préférées <br>
+        <span class="text-gradient">En 1 Clic & Sans Filigrane</span>
+      </h2>
+      <p class="hero-subtitle">
+        Enregistrez facilement vos vidéos TikTok (sans logo), YouTube, Instagram Reels et Facebook sur votre téléphone ou votre ordinateur.
+      </p>
+
+      <!-- Cartouche Téléchargeur en Verre Dépoli -->
+      <div class="glass-deck" id="downloader">
+        <div class="input-bar">
+          <div class="input-icon">🔗</div>
+          <input type="text" id="urlInput" placeholder="Collez le lien TikTok, YouTube, Instagram ou Facebook ici..." autocomplete="off">
+          <button id="btnPaste" class="btn-pill">📋 Coller</button>
+          <button id="btnAnalyze" class="btn-action-glow">⚡ Trouver la vidéo</button>
+        </div>
+
+        <!-- Détecteur de Plateforme Dynamique -->
+        <div class="detected-platform" id="detectedPlatform">
+          <span class="dot">●</span> <span id="platformText">En attente d'un lien...</span>
+        </div>
+
+        <!-- Zone de Prévisualisation (Révélée après analyse) -->
+        <div class="preview-card glass-card hidden" id="previewCard">
+          <div class="preview-thumb-box">
+            <img src="" alt="Miniature" id="previewThumb" class="preview-thumb">
+            <span class="duration-badge" id="previewDuration">00:00</span>
+          </div>
+          <div class="preview-details">
+            <h3 id="previewTitle">Titre de la vidéo</h3>
+            <p class="preview-meta" id="previewMeta">Haute Définition disponible</p>
+
+            <!-- Sélecteur de formats grand public -->
+            <div class="format-chips" id="formatChips">
+              <button class="chip active" data-fmt="MP4">🎬 Vidéo MP4 (HD / 4K)</button>
+              <button class="chip" data-fmt="MP3">🎵 Musique MP3 (Haute Qualité)</button>
+              <button class="chip" data-fmt="WAV">🎙️ Audio WAV (Son Pur)</button>
+              <button class="chip" data-fmt="MOV">🎥 Vidéo MOV (Apple & PC)</button>
+            </div>
+
+            <!-- Bouton Télécharger -->
+            <button id="btnStartDownload" class="btn-download-hero">
+              ⚡ TÉLÉCHARGER MAINTENANT
+            </button>
+          </div>
+        </div>
+
+        <!-- Moniteur de Téléchargement & Progression -->
+        <div class="download-monitor hidden" id="downloadMonitor">
+          <div class="monitor-header">
+            <span id="monitorStatus">⚡ Préparation de votre fichier...</span>
+            <span id="monitorPercent" class="percent-label">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section Applications PC & Mobile -->
+    <section class="ecosystem-section" id="apps">
+      <h3 class="section-title">Téléchargez ViddRop sur Vos Appareils</h3>
+      <div class="apps-grid">
+        <!-- Carte Logiciel PC -->
+        <div class="app-card glass-card">
+          <div class="app-icon">🖥️</div>
+          <h4>Application pour Ordinateur (Windows)</h4>
+          <p>L'application PC la plus rapide pour télécharger des playlists entières, des vidéos en 4K et convertir plusieurs fichiers en même temps.</p>
+          <div class="app-features">
+            <span>✔ Téléchargement par lots illimité</span>
+            <span>✔ Qualité maximale 4K & Ultra HD</span>
+            <span>✔ Fonctionne même hors ligne</span>
+          </div>
+          <a href="#" class="btn-card-glow">⬇ Télécharger pour Windows (.exe)</a>
+        </div>
+
+        <!-- Carte Application Android -->
+        <div class="app-card glass-card">
+          <div class="app-icon">📱</div>
+          <h4>Application Mobile pour Android</h4>
+          <p>Installez ViddRop sur votre smartphone. Téléchargez directement depuis TikTok ou Instagram en appuyant simplement sur le bouton « Partager ».</p>
+          <div class="app-features">
+            <span>✔ S'ouvre avec le bouton Partager</span>
+            <span>✔ Enregistrement direct dans votre Galerie</span>
+            <span>✔ 100% gratuit et sans pub</span>
+          </div>
+          <button id="btnInstallPwa" class="btn-card-glow">📲 Installer sur Android (Gratuit)</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Pied de page -->
+  <footer class="glass-footer">
+    <p>© 2026 ViddRop — Le téléchargeur vidéo et musique simple, rapide et gratuit pour tous.</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

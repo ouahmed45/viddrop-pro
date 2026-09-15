@@ -1,0 +1,15 @@
+{
+  "appId": "com.viddrop.studio",
+  "appName": "ViddRop Studio",
+  "webDir": "../web",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}

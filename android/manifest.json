@@ -1,0 +1,29 @@
+{
+  "name": "ViddRop — Téléchargeur Vidéo & Musique",
+  "short_name": "ViddRop",
+  "description": "Téléchargez facilement vos vidéos et musiques TikTok, YouTube et Instagram en haute qualité et sans filigrane.",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#090A10",
+  "theme_color": "#FF2D55",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/logo.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "categories": ["video", "music", "utilities"]
+}

@@ -1,0 +1,7 @@
+# Dépendances principales de ViddRop
+customtkinter>=5.2.0
+yt-dlp>=2024.12.0
+Pillow>=10.0.0
+
+# Outils de compilation (optionnel pour packaging .exe)
+pyinstaller>=6.0.0

@@ -1,0 +1,623 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   VIDDROP WEB — DESIGN SYSTEM GLASSMORPHISM (FROSTED GLASS & NEON GLOW)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-dark: #08090E;
+  --glass-nav: rgba(17, 19, 31, 0.75);
+  --glass-card: rgba(22, 25, 42, 0.65);
+  --glass-card-hover: rgba(30, 34, 56, 0.8);
+  --glass-input: rgba(18, 20, 36, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-glow: rgba(255, 45, 85, 0.4);
+
+  --accent: #FF2D55;
+  --accent-hover: #FF476E;
+  --accent-glow: rgba(255, 45, 85, 0.35);
+  --accent-translucent: rgba(255, 45, 85, 0.12);
+
+  --cyan: #00F0FF;
+  --cyan-translucent: rgba(0, 240, 255, 0.12);
+  --cyan-border: rgba(0, 240, 255, 0.3);
+
+  --green: #00E676;
+  --green-translucent: rgba(0, 230, 118, 0.12);
+  --green-border: rgba(0, 230, 118, 0.3);
+
+  --text-main: #FFFFFF;
+  --text-muted: #949CB5;
+  --text-subtle: #5B637D;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── Ambiance Lumineuse d'Arrière-Plan (Glow Orbs) ── */
+.glow-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(130px);
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 45, 85, 0.4) 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+}
+
+.orb-2 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.25) 0%, transparent 70%);
+  bottom: 50px;
+  right: -100px;
+}
+
+.orb-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+}
+
+/* ── En-Tête Glassmorphism ── */
+.glass-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--glass-nav);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0.85rem 2rem;
+}
+
+.nav-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 0 15px var(--accent-glow);
+  border: 1.5px solid var(--accent);
+}
+
+.brand-text h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.highlight {
+  color: var(--accent);
+}
+
+.badge-web {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--glass-border);
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+.tagline {
+  font-size: 0.68rem;
+  color: var(--cyan);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.nav-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.pill-ruby {
+  background: var(--accent-translucent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pill-green {
+  background: var(--green-translucent);
+  border-color: var(--green-border);
+  color: var(--green);
+}
+
+.pill-cyan {
+  background: var(--cyan-translucent);
+  border-color: var(--cyan-border);
+  color: var(--cyan);
+}
+
+.nav-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-glass-sm {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-glass-sm:hover {
+  background: var(--glass-card-hover);
+  border-color: var(--text-muted);
+}
+
+.btn-glow-sm {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  box-shadow: 0 0 15px var(--accent-glow);
+  transition: all 0.2s ease;
+}
+
+.btn-glow-sm:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 22px var(--accent);
+}
+
+/* ── Hero & Cartouche Glassmorphism ── */
+.main-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+.hero-section {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.hero-logo-banner {
+  margin-bottom: 1.2rem;
+}
+
+.hero-brand-logo {
+  width: 84px;
+  height: 84px;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 0 30px var(--accent-glow);
+  border: 2px solid var(--accent);
+  transition: transform 0.3s ease;
+}
+
+.hero-brand-logo:hover {
+  transform: scale(1.06) rotate(2deg);
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 30px;
+  background: var(--accent-translucent);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 1.2rem;
+}
+
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  margin-bottom: 1.2rem;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #FF2D55 0%, #FF6584 50%, #00F0FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 700px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
+}
+
+/* ── Cartouche de Téléchargement Dépoli ── */
+.glass-deck {
+  background: var(--glass-card);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  max-width: 850px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.input-bar {
+  display: flex;
+  align-items: center;
+  background: var(--glass-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 6px 8px;
+  gap: 8px;
+  transition: border 0.3s;
+}
+
+.input-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-translucent);
+}
+
+.input-icon {
+  font-size: 1.2rem;
+  padding-left: 10px;
+}
+
+.input-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  padding: 10px 6px;
+  font-family: inherit;
+}
+
+.input-bar input::placeholder {
+  color: var(--text-subtle);
+}
+
+.btn-pill {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.btn-action-glow {
+  padding: 10px 22px;
+  border-radius: 8px;
+  background: var(--accent);
+  border: none;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 0 15px var(--accent-glow);
+  transition: all 0.2s ease;
+}
+
+.btn-action-glow:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 25px var(--accent);
+}
+
+.detected-platform {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  color: var(--accent);
+}
+
+/* ── Carte de Prévisualisation ── */
+.preview-card {
+  margin-top: 1.5rem;
+  background: var(--glass-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 1.2rem;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.preview-thumb-box {
+  position: relative;
+  width: 220px;
+  height: 125px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.preview-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.duration-badge {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.preview-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.preview-details h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.preview-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.format-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+}
+
+.chip.active {
+  background: var(--accent-translucent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+}
+
+.btn-download-hero {
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 0.92rem;
+  cursor: pointer;
+  box-shadow: 0 0 20px var(--accent-glow);
+  transition: all 0.2s ease;
+}
+
+.btn-download-hero:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 30px var(--accent);
+}
+
+/* ── Moniteur de Téléchargement ── */
+.download-monitor {
+  margin-top: 1.5rem;
+  background: var(--glass-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 1.2rem;
+}
+
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.percent-label {
+  color: var(--accent);
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #FF2D55 0%, #FF6584 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* ── Grille de l'Écosystème Apps ── */
+.ecosystem-section {
+  margin-top: 5rem;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 2.5rem;
+}
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.app-card {
+  background: var(--glass-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.app-card:hover {
+  background: var(--glass-card-hover);
+  transform: translateY(-4px);
+  border-color: var(--glass-border-glow);
+}
+
+.app-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.app-card h4 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.app-card p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.2rem;
+  flex: 1;
+}
+
+.app-features {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--cyan);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.btn-card-glow {
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--accent-translucent);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-card-glow:hover {
+  background: var(--accent);
+  color: #FFFFFF;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ── Footer ── */
+.glass-footer {
+  text-align: center;
+  padding: 2rem;
+  border-top: 1px solid var(--glass-border);
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2rem; }
+  .nav-badges { display: none; }
+  .preview-card { flex-direction: column; }
+  .preview-thumb-box { width: 100%; height: 180px; }
+}
