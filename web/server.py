@@ -139,6 +139,11 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'no_warnings': True,
                 'noplaylist': True,
                 'socket_timeout': 15,
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android', 'ios'],
+                    }
+                },
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
                 }
@@ -190,6 +195,11 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'no_warnings': True,
                 'socket_timeout': 30,
                 'retries': 5,
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android', 'ios'],
+                    }
+                },
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
                 }
