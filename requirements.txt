@@ -3,5 +3,11 @@ customtkinter>=5.2.0
 yt-dlp>=2024.12.0
 Pillow>=10.0.0
 
+# Serveur Cloud & Déploiement Web (Render / Railway / Heroku)
+gunicorn>=21.2.0
+imageio-ffmpeg>=0.5.1
+
+
 # Outils de compilation (optionnel pour packaging .exe)
 pyinstaller>=6.0.0
+
