@@ -29,7 +29,7 @@ import shutil
 import tempfile
 import urllib.parse
 import mimetypes
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
@@ -317,7 +317,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
 
 def run():
     server_address = ("", PORT)
-    httpd = HTTPServer(server_address, ViddRopWebHandler)
+    httpd = ThreadingHTTPServer(server_address, ViddRopWebHandler)
     print("=" * 68)
     print("🌐 VIDDROP — SITE WEB & TÉLÉCHARGEUR EN LIGNE (GRAND PUBLIC)")
     print(f"🚀 Serveur actif sur : http://localhost:{PORT}")
