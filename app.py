@@ -13,11 +13,16 @@ Compatible avec :
 
 import os
 import sys
+import re
 import json
+import time
+import threading
 import shutil
 import tempfile
 import urllib.parse
 import mimetypes
+
+PROGRESS_TASKS = {}
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -98,7 +103,7 @@ def handle_info(query):
             'socket_timeout': 15,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android', 'ios'],
+                    'player_client': ['visionos', 'web', 'android'],
                 }
             },
             'http_headers': {
@@ -111,12 +116,28 @@ def handle_info(query):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
 
+        heights = [f.get('height') for f in info.get('formats', []) if f.get('height')]
+        max_h = max(heights) if heights else 0
+        if max_h >= 2160:
+            quality_label = "🌟 Ultra HD 4K (2160p)"
+        elif max_h >= 1440:
+            quality_label = "✨ Quad HD 2K (1440p)"
+        elif max_h >= 1080:
+            quality_label = "💎 Full HD (1080p)"
+        elif max_h >= 720:
+            quality_label = "📺 HD (720p)"
+        elif max_h > 0:
+            quality_label = f"Standard ({max_h}p)"
+        else:
+            quality_label = "Qualité Maximale (HD / 4K)"
+
         data = {
             "title": info.get("title", "Vidéo"),
             "uploader": info.get("uploader") or info.get("channel") or "Réseau Social",
             "duration_string": str(info.get("duration_string") or "HD"),
             "thumbnail": info.get("thumbnail") or "",
-            "quality": "Qualité Maximale (HD / 4K)"
+            "quality": quality_label,
+            "max_height": max_h
         }
         return json.dumps(data, ensure_ascii=False).encode("utf-8"), 200
     except Exception as e:
@@ -129,6 +150,16 @@ def handle_info(query):
             "warning": str(e)
         }
         return json.dumps(data, ensure_ascii=False).encode("utf-8"), 200
+
+
+def handle_progress(query):
+    task_id = query.get("id", [""])[0]
+    data = PROGRESS_TASKS.get(task_id, {
+        "status": "waiting",
+        "percent": 5.0,
+        "msg": "Connexion au flux en cours..."
+    })
+    return json.dumps(data, ensure_ascii=False).encode("utf-8"), 200
 
 
 def app(environ, start_response):
@@ -150,10 +181,23 @@ def app(environ, start_response):
         start_response(status_str, headers)
         return [body]
 
-    # 2. API DOWNLOAD
+    # 2. API PROGRESS
+    if path == "/api/progress":
+        body, status = handle_progress(query)
+        headers = [
+            ("Content-Type", "application/json; charset=utf-8"),
+            ("Content-Length", str(len(body))),
+            ("Access-Control-Allow-Origin", "*"),
+        ]
+        status_str = f"{status} OK" if status == 200 else f"{status} Error"
+        start_response(status_str, headers)
+        return [body]
+
+    # 3. API DOWNLOAD
     if path == "/api/download":
         url = query.get("url", [""])[0].strip()
         fmt = query.get("format", ["MP4"])[0].upper()
+        task_id = query.get("task_id", [""])[0]
 
         if not url:
             body = b"Lien requis"
@@ -165,8 +209,45 @@ def app(environ, start_response):
             start_response("500 Server Error", [("Content-Type", "text/plain"), ("Content-Length", str(len(body)))])
             return [body]
 
+        if task_id:
+            PROGRESS_TASKS[task_id] = {
+                "status": "downloading",
+                "percent": 8.0,
+                "msg": "⚡ Préparation du flux..."
+            }
+
         temp_dir = tempfile.mkdtemp(prefix="viddrop_")
         try:
+            def progress_hook(d):
+                if not task_id:
+                    return
+                status = d.get('status')
+                if status == 'downloading':
+                    total = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
+                    downloaded = d.get('downloaded_bytes', 0)
+                    if total > 0:
+                        pct = round((downloaded / total) * 100.0, 1)
+                    else:
+                        raw_pct = d.get('_percent_str', '0%')
+                        clean_pct = re.sub(r'[^\d\.]', '', raw_pct)
+                        pct = float(clean_pct) if clean_pct else 8.0
+                    speed = d.get('_speed_str', '')
+                    clean_speed = re.sub(r'\x1b\[[0-9;]*m', '', speed).strip()
+                    clamped = max(8.0, min(pct, 96.0))
+                    msg = f"⚡ {clamped:.1f}% ({clean_speed})" if clean_speed else f"⚡ {clamped:.1f}%"
+                    PROGRESS_TASKS[task_id] = {
+                        'status': 'downloading',
+                        'percent': clamped,
+                        'speed': clean_speed,
+                        'msg': msg
+                    }
+                elif status == 'finished':
+                    PROGRESS_TASKS[task_id] = {
+                        'status': 'processing',
+                        'percent': 98.0,
+                        'msg': "⚙ Finalisation et assemblage du fichier..."
+                    }
+
             ydl_opts = {
                 'outtmpl': os.path.join(temp_dir, '%(title).80s.%(ext)s'),
                 'windowsfilenames': True,
@@ -175,9 +256,10 @@ def app(environ, start_response):
                 'no_warnings': True,
                 'socket_timeout': 30,
                 'retries': 5,
+                'progress_hooks': [progress_hook],
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['android', 'ios'],
+                        'player_client': ['visionos', 'web', 'android'],
                     }
                 },
                 'http_headers': {
@@ -211,19 +293,35 @@ def app(environ, start_response):
                     })
                 else:
                     ydl_opts.update({'format': 'bestaudio/best'})
+            elif fmt == "MP4_1080":
+                if FFMPEG_PATH:
+                    ydl_opts.update({
+                        'format': 'bestvideo[height<=1080]+bestaudio/best',
+                        'merge_output_format': 'mp4',
+                    })
+                else:
+                    ydl_opts.update({'format': 'best[height<=1080]/best'})
+            elif fmt == "MP4_720":
+                if FFMPEG_PATH:
+                    ydl_opts.update({
+                        'format': 'bestvideo[height<=720]+bestaudio/best',
+                        'merge_output_format': 'mp4',
+                    })
+                else:
+                    ydl_opts.update({'format': 'best[height<=720]/best'})
             elif fmt == "WEBM":
                 ydl_opts.update({
                     'format': 'bestvideo+bestaudio/best',
                     'merge_output_format': 'webm'
                 })
-            else:
+            else:  # MP4 (Qualité Maximale 4K / 2K / 1080p) ou MOV
                 if FFMPEG_PATH:
                     ydl_opts.update({
-                        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',
+                        'format': 'bestvideo+bestaudio/best',
                         'merge_output_format': 'mp4' if fmt == "MP4" else 'mov',
                     })
                 else:
-                    ydl_opts.update({'format': 'best[ext=mp4]/best'})
+                    ydl_opts.update({'format': 'bestvideo+bestaudio/best'})
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
@@ -242,13 +340,22 @@ def app(environ, start_response):
             target_file = downloaded_files[0]
             filename = os.path.basename(target_file)
             file_size = os.path.getsize(target_file)
+            clean_ascii = re.sub(r'[^\x20-\x7E]', '_', filename).replace('"', '')
+            safe_name = urllib.parse.quote(filename, encoding='utf-8')
             mime_type = get_mime_type(target_file)
-            safe_name = urllib.parse.quote(filename)
+
+            if task_id:
+                PROGRESS_TASKS[task_id] = {
+                    'status': 'done',
+                    'percent': 100.0,
+                    'msg': "✅ Fichier prêt ! Téléchargement en cours..."
+                }
 
             headers = [
                 ("Content-Type", mime_type),
                 ("Content-Length", str(file_size)),
-                ("Content-Disposition", f"attachment; filename=\"{filename}\"; filename*=UTF-8''{safe_name}"),
+                ("Content-Disposition", f'attachment; filename="{clean_ascii}"; filename*=UTF-8\'\'{safe_name}'),
+                ("X-Content-Type-Options", "nosniff"),
                 ("Access-Control-Allow-Origin", "*"),
             ]
             start_response("200 OK", headers)
@@ -262,11 +369,22 @@ def app(environ, start_response):
                                 break
                             yield chunk
                 finally:
+                    if task_id:
+                        def _cleanup():
+                            time.sleep(120)
+                            PROGRESS_TASKS.pop(task_id, None)
+                        threading.Thread(target=_cleanup, daemon=True).start()
                     shutil.rmtree(temp_dir, ignore_errors=True)
 
             return file_stream()
 
         except Exception as e:
+            if task_id:
+                PROGRESS_TASKS[task_id] = {
+                    'status': 'error',
+                    'percent': 0.0,
+                    'msg': f"❌ Erreur : {str(e)[:50]}"
+                }
             shutil.rmtree(temp_dir, ignore_errors=True)
             body = f"Erreur : {e}".encode("utf-8")
             start_response("500 Server Error", [("Content-Type", "text/plain")])
