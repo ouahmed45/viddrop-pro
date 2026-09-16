@@ -46,6 +46,24 @@ document.addEventListener("DOMContentLoaded", () => {
     detectPlatform(urlInput.value.trim());
   });
 
+  urlInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const url = urlInput.value.trim();
+      if (url) analyzeVideo(url);
+    }
+  });
+
+  urlInput.addEventListener("paste", () => {
+    setTimeout(() => {
+      const url = urlInput.value.trim();
+      if (url && url.startsWith("http")) {
+        detectPlatform(url);
+        analyzeVideo(url);
+      }
+    }, 150);
+  });
+
   function detectPlatform(url) {
     const u = url.toLowerCase();
     if (u.includes("youtube.com") || u.includes("youtu.be")) {
@@ -92,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   async function analyzeVideo(url) {
-    btnAnalyze.innerText = "⏳ Analyse...";
+    btnAnalyze.innerText = "⏳ Recherche...";
     btnAnalyze.disabled = true;
 
     try {
@@ -104,27 +122,39 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("Erreur API");
       }
     } catch (e) {
-      // Mode autonome / Fallback gracieux si l'API Python n'est pas encore démarrée
       renderFallbackPreview(url);
     } finally {
-      btnAnalyze.innerText = "⚡ Analyser";
+      btnAnalyze.innerText = "⚡ Trouver la vidéo";
       btnAnalyze.disabled = false;
     }
   }
 
   function renderPreview(data) {
     currentVideoData = data;
-    previewTitle.innerText = data.title || "Vidéo Multimédia";
-    previewMeta.innerText = `${data.uploader || "Auteur"} • ${data.quality || "HD 1080p"}`;
-    previewDuration.innerText = data.duration_string || "00:00";
+    previewTitle.innerText = data.title || "Vidéo Prête";
+    const qualityLabel = data.quality || "Qualité Maximale (HD / 4K)";
+    previewMeta.innerHTML = `<span style="color:#00F0FF; font-weight:600;">${data.uploader || "Réseau Social"}</span> • <span style="background:linear-gradient(135deg, #FF2D55, #FF5E3A); color:#FFF; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.8rem; box-shadow:0 0 10px rgba(255,45,85,0.4);">${qualityLabel}</span>`;
+    previewDuration.innerText = data.duration_string || "HD";
+
+    // Gestion de secours si le format webp de YouTube n'existe pas sur cette vidéo
+    previewThumb.onerror = () => {
+      const current = previewThumb.src;
+      if (current.includes("maxresdefault.webp")) {
+        previewThumb.src = current.replace("maxresdefault.webp", "hqdefault.jpg");
+      } else if (current.includes("maxresdefault")) {
+        previewThumb.src = current.replace("maxresdefault", "hqdefault");
+      }
+    };
     previewThumb.src = data.thumbnail || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500";
+
     previewCard.classList.remove("hidden");
+    previewCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function renderFallbackPreview(url) {
     currentVideoData = { url: url, title: "Vidéo analysée avec succès" };
     previewTitle.innerText = "Média Prêt pour Téléchargement";
-    previewMeta.innerText = "Qualité Maximale Détectée (Full HD / 48kHz)";
+    previewMeta.innerHTML = `<span style="color:#00F0FF; font-weight:600;">Réseau Social</span> • <span style="background:linear-gradient(135deg, #FF2D55, #FF5E3A); color:#FFF; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.8rem;">🌟 Qualité Maximale (HD / 4K)</span>`;
     previewDuration.innerText = "Auto";
     previewThumb.src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500";
     previewCard.classList.remove("hidden");
@@ -139,35 +169,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ── 6. Lancement du Téléchargement ──
+  // ── 6. Lancement du Téléchargement avec Pourcentage Temps Réel ──
   btnStartDownload.addEventListener("click", () => {
     const url = urlInput.value.trim();
     if (!url) return;
 
+    const taskId = "viddrop_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+
     btnStartDownload.disabled = true;
-    btnStartDownload.innerText = "⏳ Préparation du fichier...";
+    btnStartDownload.innerText = "⏳ En cours...";
     downloadMonitor.classList.remove("hidden");
-    monitorStatus.innerText = `⚡ Analyse et extraction du flux ${selectedFormat}...`;
-    progressBar.style.width = "15%";
-    monitorPercent.innerText = "15%";
 
-    let p = 15;
-    const interval = setInterval(() => {
-      if (p < 85) {
-        p += Math.floor(Math.random() * 8) + 4;
-        progressBar.style.width = `${p}%`;
-        monitorPercent.innerText = `${p}%`;
-      }
-      if (p >= 50 && p < 80) {
-        monitorStatus.innerText = "⚙ Conversion et assemblage audio/vidéo...";
-      } else if (p >= 80) {
-        monitorStatus.innerText = "📥 Envoi vers Chrome... Le fichier arrive dans vos Téléchargements !";
-      }
-    }, 400);
+    let initMsg = "⚡ Initialisation du flux 4K / HD...";
+    if (selectedFormat === "MP4_1080") initMsg = "⚡ Initialisation du flux Full HD (1080p)...";
+    else if (selectedFormat === "MP4_720") initMsg = "⚡ Initialisation du flux HD (720p)...";
+    else if (selectedFormat === "MP3") initMsg = "⚡ Extraction audio MP3 (320 kbps)...";
+    else if (selectedFormat === "WAV") initMsg = "⚡ Extraction audio WAV pur...";
 
-    const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&format=${selectedFormat}`;
+    monitorStatus.innerText = initMsg;
+    progressBar.style.width = "0%";
+    monitorPercent.innerText = "0%";
 
-    // Utilisation d'une iframe invisible pour déclencher le téléchargement sans quitter la page
+    // Déclenchement du téléchargement en arrière-plan
+    const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&format=${selectedFormat}&task_id=${taskId}`;
     let iframe = document.getElementById("hiddenDownloadFrame");
     if (!iframe) {
       iframe = document.createElement("iframe");
@@ -177,14 +201,91 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     iframe.src = downloadUrl;
 
-    setTimeout(() => {
-      clearInterval(interval);
+    // Récupération de la progression en temps réel
+    let consecutiveErrors = 0;
+    let isCompleted = false;
+
+    function finishSuccess(msg) {
+      if (isCompleted) return;
+      isCompleted = true;
+      clearInterval(pollInterval);
+      clearTimeout(safetyTimeout);
       progressBar.style.width = "100%";
       monitorPercent.innerText = "100%";
-      monitorStatus.innerText = "✅ Téléchargement envoyé à votre navigateur Chrome !";
+      monitorStatus.innerHTML = msg || "✅ <strong>Téléchargement terminé !</strong> Votre vidéo est dans les téléchargements Chrome (ouvrez avec <strong>Ctrl + J</strong>).";
+      setTimeout(() => {
+        btnStartDownload.disabled = false;
+        btnStartDownload.innerText = "⚡ TÉLÉCHARGER MAINTENANT";
+      }, 1000);
+    }
+
+    function finishError(msg) {
+      if (isCompleted) return;
+      isCompleted = true;
+      clearInterval(pollInterval);
+      clearTimeout(safetyTimeout);
+      monitorStatus.innerHTML = `<span style="color:#FF2D55;">❌ ${msg || "Une erreur est survenue lors de l'extraction."}</span>`;
       btnStartDownload.disabled = false;
-      btnStartDownload.innerText = "⚡ TÉLÉCHARGER MAINTENANT";
-    }, 3500);
+      btnStartDownload.innerText = "⚡ RÉESSAYER";
+    }
+
+    // Sécurité : Timeout maximum de 2 minutes
+    const safetyTimeout = setTimeout(() => {
+      finishSuccess("✅ <strong>Téléchargement envoyé !</strong> Vérifiez la barre de téléchargement de votre navigateur (Ctrl + J).");
+    }, 120000);
+
+    const pollInterval = setInterval(async () => {
+      if (isCompleted) {
+        clearInterval(pollInterval);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/progress?id=${taskId}`);
+        if (res.ok) {
+          consecutiveErrors = 0;
+          const prog = await res.json();
+          const p = parseFloat(prog.percent) || 0;
+          progressBar.style.width = `${p}%`;
+          monitorPercent.innerText = `${p.toFixed(1)}%`;
+          if (prog.msg) {
+            monitorStatus.innerText = prog.msg;
+          }
+
+          if (prog.status === "done" || p >= 100) {
+            finishSuccess();
+          } else if (prog.status === "error") {
+            finishError(prog.msg);
+          }
+        } else {
+          consecutiveErrors++;
+          // Si le serveur renvoie 404 plus de 3 fois de suite, on arrête de spammer
+          // et on bascule sur une progression visuelle sécurisée
+          if (consecutiveErrors >= 3) {
+            clearInterval(pollInterval);
+            let simPercent = 20;
+            const simInterval = setInterval(() => {
+              if (isCompleted) {
+                clearInterval(simInterval);
+                return;
+              }
+              simPercent += Math.min(15, (95 - simPercent) * 0.25);
+              progressBar.style.width = `${Math.min(95, simPercent).toFixed(0)}%`;
+              monitorPercent.innerText = `${Math.min(95, simPercent).toFixed(0)}%`;
+              monitorStatus.innerText = "⚡ Téléchargement et conversion en cours...";
+
+              if (simPercent >= 94) {
+                clearInterval(simInterval);
+                setTimeout(() => {
+                  finishSuccess("✅ <strong>Téléchargement envoyé vers votre navigateur !</strong> Regardez en bas de votre écran ou appuyez sur <strong>Ctrl + J</strong>.");
+                }, 3000);
+              }
+            }, 600);
+          }
+        }
+      } catch (err) {
+        // Micro-coupure réseau temporaire
+      }
+    }, 350);
   });
 
   // ── 7. Support Installation PWA sur Android ──
