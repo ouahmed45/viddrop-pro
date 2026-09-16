@@ -20,9 +20,38 @@ import threading
 import shutil
 import tempfile
 import urllib.parse
+import urllib.request
 import mimetypes
 
 PROGRESS_TASKS = {}
+
+def fetch_oembed_info(url):
+    """Extraction rapide et sans blocage des métadonnées (titre, miniature, créateur)."""
+    try:
+        req_url = f"https://www.youtube.com/oembed?url={urllib.parse.quote(url)}&format=json"
+        req = urllib.request.Request(req_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return {
+                "title": data.get("title") or "Vidéo YouTube",
+                "uploader": data.get("author_name") or "YouTube",
+                "thumbnail": data.get("thumbnail_url") or "",
+                "duration_string": "HD",
+                "quality": "🌟 Ultra HD 4K (2160p)"
+            }
+    except Exception:
+        pass
+    m = re.search(r'(?:v=|\/|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})', url)
+    if m:
+        video_id = m.group(1)
+        return {
+            "title": "Vidéo YouTube",
+            "uploader": "YouTube",
+            "thumbnail": f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg",
+            "duration_string": "HD",
+            "quality": "🌟 Ultra HD 4K (2160p)"
+        }
+    return None
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -103,7 +132,7 @@ def handle_info(query):
             'socket_timeout': 15,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['visionos', 'web', 'android'],
+                    'player_client': ['visionos', 'android'],
                 }
             },
             'http_headers': {
@@ -141,6 +170,9 @@ def handle_info(query):
         }
         return json.dumps(data, ensure_ascii=False).encode("utf-8"), 200
     except Exception as e:
+        fallback = fetch_oembed_info(url)
+        if fallback:
+            return json.dumps(fallback, ensure_ascii=False).encode("utf-8"), 200
         data = {
             "title": "Vidéo trouvée",
             "uploader": "Réseau Social",
@@ -259,7 +291,7 @@ def app(environ, start_response):
                 'progress_hooks': [progress_hook],
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['visionos', 'web', 'android'],
+                        'player_client': ['visionos', 'android'],
                     }
                 },
                 'http_headers': {
