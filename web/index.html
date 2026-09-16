@@ -8,6 +8,7 @@
   <link rel="icon" type="image/png" href="/static/logo.png">
   <link rel="manifest" href="/android/manifest.json">
   <meta name="theme-color" content="#FF2D55">
+  <meta name="referrer" content="no-referrer">
 </head>
 <body>
   <!-- Ambiance Lumineuse d'Arrière-Plan (Glow Orbs) -->
@@ -71,7 +72,7 @@
         <!-- Zone de Prévisualisation (Révélée après analyse) -->
         <div class="preview-card glass-card hidden" id="previewCard">
           <div class="preview-thumb-box">
-            <img src="" alt="Miniature" id="previewThumb" class="preview-thumb">
+            <img src="" alt="Miniature" id="previewThumb" class="preview-thumb" referrerpolicy="no-referrer">
             <span class="duration-badge" id="previewDuration">00:00</span>
           </div>
           <div class="preview-details">
@@ -80,10 +81,11 @@
 
             <!-- Sélecteur de formats grand public -->
             <div class="format-chips" id="formatChips">
-              <button class="chip active" data-fmt="MP4">🎬 Vidéo MP4 (HD / 4K)</button>
-              <button class="chip" data-fmt="MP3">🎵 Musique MP3 (Haute Qualité)</button>
-              <button class="chip" data-fmt="WAV">🎙️ Audio WAV (Son Pur)</button>
-              <button class="chip" data-fmt="MOV">🎥 Vidéo MOV (Apple & PC)</button>
+              <button class="chip active" data-fmt="MP4">🎬 Vidéo 4K / HD Maximale (MP4)</button>
+              <button class="chip" data-fmt="MP4_1080">📺 Vidéo Full HD 1080p (MP4)</button>
+              <button class="chip" data-fmt="MP4_720">📱 Vidéo HD 720p (MP4 Rapide)</button>
+              <button class="chip" data-fmt="MP3">🎵 Audio MP3 (320 kbps)</button>
+              <button class="chip" data-fmt="WAV">🎙️ Audio WAV (Sans Perte)</button>
             </div>
 
             <!-- Bouton Télécharger -->
