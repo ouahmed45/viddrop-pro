@@ -180,7 +180,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'socket_timeout': 15,
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['visionos', 'android'],
+                        'player_client': ['android', 'ios', 'visionos'],
                     }
                 },
                 'http_headers': {
@@ -303,7 +303,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'progress_hooks': [progress_hook],
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['visionos', 'android'],
+                        'player_client': ['android', 'ios', 'visionos'],
                     }
                 },
                 'http_headers': {
