@@ -98,6 +98,30 @@ if not FFMPEG_PATH:
         pass
 
 
+def get_cookie_file():
+    """Détecte ou extrait le fichier cookies.txt pour contourner le bot-check YouTube."""
+    env_cookies = os.environ.get("YOUTUBE_COOKIES")
+    if env_cookies and len(env_cookies.strip()) > 20:
+        target = os.path.join(tempfile.gettempdir(), "render_yt_cookies.txt")
+        try:
+            with open(target, "w", encoding="utf-8") as f:
+                f.write(env_cookies.strip())
+            return target
+        except Exception:
+            pass
+
+    candidates = [
+        "/etc/secrets/cookies.txt",
+        os.path.join(ROOT_DIR, "cookies.txt"),
+        os.path.join(BASE_DIR, "cookies.txt"),
+        os.path.join(os.getcwd(), "cookies.txt"),
+    ]
+    for c in candidates:
+        if os.path.isfile(c) and os.path.getsize(c) > 10:
+            return c
+    return None
+
+
 class ViddRopWebHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         sys.stdout.write(f"[{self.log_date_time_string()}] {format % args}\n")
@@ -189,6 +213,10 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
             }
             if FFMPEG_PATH:
                 ydl_opts['ffmpeg_location'] = FFMPEG_PATH
+
+            cfile = get_cookie_file()
+            if cfile:
+                ydl_opts['cookiefile'] = cfile
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
@@ -313,6 +341,10 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
 
             if FFMPEG_PATH:
                 ydl_opts['ffmpeg_location'] = FFMPEG_PATH
+
+            cfile = get_cookie_file()
+            if cfile:
+                ydl_opts['cookiefile'] = cfile
 
             if fmt == "MP3":
                 if FFMPEG_PATH:
