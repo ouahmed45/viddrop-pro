@@ -204,7 +204,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'socket_timeout': 15,
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['android', 'ios'],
+                        'player_client': ['android'],
                     }
                 },
                 'http_headers': {
@@ -331,7 +331,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'progress_hooks': [progress_hook],
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['android', 'ios'],
+                        'player_client': ['android'],
                     }
                 },
                 'http_headers': {
