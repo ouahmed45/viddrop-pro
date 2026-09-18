@@ -399,36 +399,25 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 else:
                     ydl_opts.update({'format': 'bestaudio/best'})
             elif fmt == "MP4_1080":
-                if FFMPEG_PATH:
-                    ydl_opts.update({
-                        'format': 'bestvideo[height<=1080]*+bestaudio/best[height<=1080]/best',
-                        'merge_output_format': 'mp4',
-                    })
-                else:
-                    ydl_opts.update({'format': 'bestvideo[height<=1080]*+bestaudio/best[height<=1080]/best'})
+                ydl_opts.update({
+                    'format': 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best',
+                    'merge_output_format': 'mp4',
+                })
             elif fmt == "MP4_720":
-                if FFMPEG_PATH:
-                    ydl_opts.update({
-                        'format': 'bestvideo[height<=720]*+bestaudio/best[height<=720]/best',
-                        'merge_output_format': 'mp4',
-                    })
-                else:
-                    ydl_opts.update({'format': 'bestvideo[height<=720]*+bestaudio/best[height<=720]/best'})
+                ydl_opts.update({
+                    'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
+                    'merge_output_format': 'mp4',
+                })
             elif fmt == "WEBM":
                 ydl_opts.update({
-                    'format': 'bestvideo*+bestaudio/best[ext=webm]/best',
+                    'format': 'bestvideo+bestaudio/best',
                     'merge_output_format': 'webm'
                 })
-            else:  # MP4 (Qualité Maximale 4K / 2K / 1080p) ou MOV
-                if FFMPEG_PATH:
-                    ydl_opts.update({
-                        'format': 'bestvideo*+bestaudio/best[ext=mp4]/best',
-                        'merge_output_format': 'mp4' if fmt == "MP4" else 'mov',
-                    })
-                else:
-                    ydl_opts.update({
-                        'format': 'bestvideo*+bestaudio/best[ext=mp4]/best',
-                    })
+            else:  # MP4 (Qualite Maximale 4K / 2K / 1080p) ou MOV
+                ydl_opts.update({
+                    'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',
+                    'merge_output_format': 'mp4' if fmt == "MP4" else 'mov',
+                })
 
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
