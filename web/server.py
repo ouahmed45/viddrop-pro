@@ -215,8 +215,16 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
         """Route de diagnostic en direct pour inspecter YouTube, yt-dlp et FFmpeg sur Render."""
         test_url = query.get("url", ["https://www.youtube.com/watch?v=5E2DiKzX21w"])[0].strip()
         cfile = get_cookie_file()
+        ytdlp_ver = "Non installé"
+        if "yt_dlp" in sys.modules and sys.modules["yt_dlp"] is not None:
+            try:
+                mod = sys.modules["yt_dlp"]
+                ytdlp_ver = getattr(getattr(mod, "version", None), "__version__", "Installé")
+            except Exception:
+                ytdlp_ver = "Installé"
+
         diag = {
-            "ytdlp_version": getattr(yt_dlp, "__version__", "Non installé") if yt_dlp else "Non installé",
+            "ytdlp_version": ytdlp_ver,
             "ffmpeg_path": FFMPEG_PATH,
             "ffmpeg_exists": bool(FFMPEG_PATH and os.path.exists(FFMPEG_PATH)),
             "cookie_detected": bool(cfile),
@@ -237,6 +245,8 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
             'quiet': True,
             'no_warnings': True,
             'socket_timeout': 15,
+            'format': 'all',
+            'check_formats': False,
             'extractor_args': {
                 'youtube': {
                     'player_client': ['android', 'default'],
@@ -289,6 +299,8 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'no_warnings': True,
                 'noplaylist': True,
                 'socket_timeout': 15,
+                'format': 'all',
+                'check_formats': False,
                 'extractor_args': {
                     'youtube': {
                         'player_client': ['android', 'default'],
