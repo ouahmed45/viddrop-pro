@@ -98,6 +98,33 @@ if not FFMPEG_PATH:
         pass
 
 
+def setup_oauth2_cache():
+    """
+    Restaure le cache OAuth2 yt-dlp depuis la variable YOUTUBE_OAUTH_TOKEN.
+    Retourne le chemin du cache si succès, None sinon.
+    """
+    import base64
+    token_b64 = os.environ.get("YOUTUBE_OAUTH_TOKEN", "").strip()
+    if not token_b64:
+        return None
+    try:
+        cache_data = json.loads(base64.b64decode(token_b64).decode("utf-8"))
+        cache_dir = os.path.join(tempfile.gettempdir(), "viddrop_yt_cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        for rel_path, file_b64 in cache_data.items():
+            full_path = os.path.join(cache_dir, rel_path.replace("\\", os.sep).replace("/", os.sep))
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            with open(full_path, "wb") as fh:
+                fh.write(base64.b64decode(file_b64))
+        print(f"[OAuth2] Token restaure dans : {cache_dir}")
+        return cache_dir
+    except Exception as e:
+        print(f"[OAuth2] Erreur token : {e}")
+        return None
+
+# Restaure le cache OAuth2 au démarrage du serveur (une seule fois)
+OAUTH2_CACHE_DIR = setup_oauth2_cache()
+
 def get_cookie_file():
     """Détecte ou extrait le fichier cookies.txt pour contourner le bot-check YouTube."""
     env_cookies = os.environ.get("YOUTUBE_COOKIES")
@@ -217,6 +244,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
             cfile = get_cookie_file()
             if cfile:
                 ydl_opts['cookiefile'] = cfile
+                ydl_opts['extractor_args'] = {'youtube': {'player_client': ['web']}}
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
@@ -345,6 +373,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
             cfile = get_cookie_file()
             if cfile:
                 ydl_opts['cookiefile'] = cfile
+                ydl_opts['extractor_args'] = {'youtube': {'player_client': ['web']}}
 
             if fmt == "MP3":
                 if FFMPEG_PATH:
