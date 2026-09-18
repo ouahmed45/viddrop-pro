@@ -171,6 +171,10 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
             self.handle_api_download(query)
             return
 
+        if path == "/api/debug":
+            self.handle_api_debug(query)
+            return
+
         if path == "/" or path == "/index.html":
             file_path = os.path.join(BASE_DIR, "index.html")
         elif path.startswith("/static/"):
@@ -207,6 +211,62 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self.send_error(500, f"Erreur lecture fichier : {e}")
 
+    def handle_api_debug(self, query):
+        """Route de diagnostic en direct pour inspecter YouTube, yt-dlp et FFmpeg sur Render."""
+        test_url = query.get("url", ["https://www.youtube.com/watch?v=5E2DiKzX21w"])[0].strip()
+        cfile = get_cookie_file()
+        diag = {
+            "ytdlp_version": getattr(yt_dlp, "__version__", "Non installé") if yt_dlp else "Non installé",
+            "ffmpeg_path": FFMPEG_PATH,
+            "ffmpeg_exists": bool(FFMPEG_PATH and os.path.exists(FFMPEG_PATH)),
+            "cookie_detected": bool(cfile),
+            "cookie_path": cfile if cfile else None,
+            "cookie_env_len": len(os.environ.get("YOUTUBE_COOKIES", "")),
+            "test_url": test_url,
+            "formats": [],
+            "error": None
+        }
+
+        if not yt_dlp:
+            diag["error"] = "yt-dlp non installé sur le serveur"
+            self.send_json(diag)
+            return
+
+        ydl_opts = {
+            'skip_download': True,
+            'quiet': True,
+            'no_warnings': True,
+            'socket_timeout': 15,
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['android', 'default'],
+                }
+            }
+        }
+        if cfile:
+            ydl_opts['cookiefile'] = cfile
+        if FFMPEG_PATH:
+            ydl_opts['ffmpeg_location'] = FFMPEG_PATH
+
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(test_url, download=False)
+                for f in info.get("formats", []):
+                    diag["formats"].append({
+                        "id": f.get("format_id"),
+                        "ext": f.get("ext"),
+                        "height": f.get("height"),
+                        "vcodec": f.get("vcodec"),
+                        "acodec": f.get("acodec"),
+                        "tbr": f.get("tbr"),
+                        "has_url": bool(f.get("url"))
+                    })
+                diag["video_title"] = info.get("title")
+        except Exception as e:
+            diag["error"] = str(e)
+
+        self.send_json(diag)
+
     def handle_api_info(self, query):
         url = query.get("url", [""])[0].strip()
         if not url:
@@ -231,7 +291,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'socket_timeout': 15,
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['android'],
+                        'player_client': ['android', 'default'],
                     }
                 },
                 'http_headers': {
@@ -244,7 +304,6 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
             cfile = get_cookie_file()
             if cfile:
                 ydl_opts['cookiefile'] = cfile
-                ydl_opts['extractor_args'] = {'youtube': {'player_client': ['web']}}
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
@@ -359,7 +418,7 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 'progress_hooks': [progress_hook],
                 'extractor_args': {
                     'youtube': {
-                        'player_client': ['android'],
+                        'player_client': ['android', 'default'],
                     }
                 },
                 'http_headers': {
@@ -373,12 +432,11 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
             cfile = get_cookie_file()
             if cfile:
                 ydl_opts['cookiefile'] = cfile
-                ydl_opts['extractor_args'] = {'youtube': {'player_client': ['web']}}
 
             if fmt == "MP3":
                 if FFMPEG_PATH:
                     ydl_opts.update({
-                        'format': 'bestaudio/best',
+                        'format': 'ba/b',
                         'postprocessors': [{
                             'key': 'FFmpegExtractAudio',
                             'preferredcodec': 'mp3',
@@ -386,36 +444,36 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                         }],
                     })
                 else:
-                    ydl_opts.update({'format': 'bestaudio/best'})
+                    ydl_opts.update({'format': 'ba/b'})
             elif fmt == "WAV":
                 if FFMPEG_PATH:
                     ydl_opts.update({
-                        'format': 'bestaudio/best',
+                        'format': 'ba/b',
                         'postprocessors': [{
                             'key': 'FFmpegExtractAudio',
                             'preferredcodec': 'wav',
                         }],
                     })
                 else:
-                    ydl_opts.update({'format': 'bestaudio/best'})
+                    ydl_opts.update({'format': 'ba/b'})
             elif fmt == "MP4_1080":
                 ydl_opts.update({
-                    'format': 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best',
+                    'format': 'bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/b',
                     'merge_output_format': 'mp4',
                 })
             elif fmt == "MP4_720":
                 ydl_opts.update({
-                    'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
+                    'format': 'bv*[height<=720]+ba/b[height<=720]/bv*+ba/b',
                     'merge_output_format': 'mp4',
                 })
             elif fmt == "WEBM":
                 ydl_opts.update({
-                    'format': 'bestvideo+bestaudio/best',
+                    'format': 'bv*+ba/b',
                     'merge_output_format': 'webm'
                 })
             else:  # MP4 (Qualite Maximale 4K / 2K / 1080p) ou MOV
                 ydl_opts.update({
-                    'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',
+                    'format': 'bv*+ba/b',
                     'merge_output_format': 'mp4' if fmt == "MP4" else 'mov',
                 })
 
@@ -423,10 +481,17 @@ class ViddRopWebHandler(BaseHTTPRequestHandler):
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([url])
             except Exception as dl_primary_err:
-                print(f"[ViddRop] Bascule sur sélecteur universel de secours : {dl_primary_err}")
-                ydl_opts['format'] = 'b/best'
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl_fallback:
-                    ydl_fallback.download([url])
+                print(f"[ViddRop] Echec format primaire ({dl_primary_err}), repli 1 sur bv*+ba/b...")
+                try:
+                    ydl_opts['format'] = 'bv*+ba/b'
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl_fallback:
+                        ydl_fallback.download([url])
+                except Exception as dl_sec_err:
+                    print(f"[ViddRop] Echec repli 1 ({dl_sec_err}), repli ultime sur b/best...")
+                    ydl_opts['format'] = 'b/best'
+                    ydl_opts.pop('postprocessors', None)
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl_ultimate:
+                        ydl_ultimate.download([url])
 
             # Recherche du fichier généré
             downloaded_files = [
